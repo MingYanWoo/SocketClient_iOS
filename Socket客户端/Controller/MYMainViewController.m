@@ -15,10 +15,11 @@
 
 #define MYBackgroudColor [UIColor colorWithRed:239.0/255.0 green:239.0/255.0 blue:239.0/255.0 alpha:1]
 
-@interface MYMainViewController () <GCDAsyncSocketDelegate,UITableViewDelegate,UITableViewDataSource,UITextFieldDelegate,MYSetUsernameViewDelegate>
+@interface MYMainViewController () <GCDAsyncSocketDelegate,UITableViewDelegate,UITableViewDataSource,UITextViewDelegate,MYSetUsernameViewDelegate>
 
 @property (nonatomic, strong) GCDAsyncSocket *socket;
-@property (weak, nonatomic) UITextField *textField;
+@property (weak, nonatomic) UIView *toolBarView;
+@property (weak, nonatomic) UITextView *textView;
 @property (weak, nonatomic) UITableView *tableView;
 
 @property (nonatomic, copy) NSString *userName;
@@ -47,16 +48,16 @@
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.view.backgroundColor = MYBackgroudColor;
     
-    UIVisualEffectView *visualEfView = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleLight]];
-    visualEfView.frame = self.view.frame;
-    visualEfView.alpha = 0.01;
-    [self.view addSubview:visualEfView];
-    _visualEfView = visualEfView;
-    
-    MYSetUsernameView *setUsernameView = [[MYSetUsernameView alloc] init];
-    setUsernameView.delegate = self;
-    [self.view addSubview:setUsernameView];
-    _setUsernameView = setUsernameView;
+//    UIVisualEffectView *visualEfView = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleLight]];
+//    visualEfView.frame = self.view.frame;
+//    visualEfView.alpha = 0.01;
+//    [self.view addSubview:visualEfView];
+//    _visualEfView = visualEfView;
+//    
+//    MYSetUsernameView *setUsernameView = [[MYSetUsernameView alloc] init];
+//    setUsernameView.delegate = self;
+//    [self.view addSubview:setUsernameView];
+//    _setUsernameView = setUsernameView;
     
     [UIView animateWithDuration:0.5 animations:^{
         _visualEfView.alpha = 0.9;
@@ -111,7 +112,7 @@
 {
     [self.coverView removeFromSuperview];
     self.coverView = nil;
-    [self.textField endEditing:YES];
+    [self.textView endEditing:YES];
 }
 
 - (void)btnClicked:(MYSetUsernameView *)view withName:(NSString *)name
@@ -134,6 +135,7 @@
     UIView *toolBarView = [[UIView alloc] initWithFrame:CGRectMake(0, screenSize.height - 50, screenSize.width, 50)];
     toolBarView.backgroundColor = [UIColor colorWithRed:230.0/255.0 green:230.0/255.0 blue:230.0/255.0 alpha:1];
     [self.view addSubview:toolBarView];
+    _toolBarView = toolBarView;
     
     //发送按钮
     UIButton *sendBtn = [[UIButton alloc] initWithFrame:CGRectMake(screenSize.width - 50 - margin, margin, 50, toolBarView.bounds.size.height - 2 * margin)];
@@ -145,15 +147,18 @@
     [toolBarView addSubview:sendBtn];
     
     //输入框
-    UITextField *textField = [[UITextField alloc] initWithFrame:CGRectMake(margin, margin, screenSize.width - sendBtn.bounds.size.width - 3 * margin, toolBarView.bounds.size.height - 2 * margin)];
-    textField.backgroundColor = [UIColor whiteColor];
-    textField.layer.borderColor = [UIColor blackColor].CGColor;
-    textField.layer.borderWidth = 2;
-    textField.layer.cornerRadius = 10;
-    [textField setReturnKeyType:UIReturnKeySend];
-    textField.delegate = self;
-    [toolBarView addSubview:textField];
-    _textField = textField;
+    UITextView *textView = [[UITextView alloc] initWithFrame:CGRectMake(margin, margin, screenSize.width - sendBtn.bounds.size.width - 3 * margin, toolBarView.bounds.size.height - 2 * margin)];
+    textView.backgroundColor = [UIColor whiteColor];
+    textView.layer.borderColor = [UIColor blackColor].CGColor;
+    textView.layer.borderWidth = 2;
+    textView.layer.cornerRadius = 10;
+    [textView setFont:[UIFont systemFontOfSize:14]];
+    textView.tintColor = [UIColor blackColor];
+    textView.contentOffset = CGPointMake(5, 0);
+    [textView setReturnKeyType:UIReturnKeySend];
+    textView.delegate = self;
+    [toolBarView addSubview:textView];
+    _textView = textView;
     
     //tableView
     UITableView *tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 20, screenSize.width, screenSize.height - toolBarView.bounds.size.height - 20)];
@@ -167,9 +172,10 @@
 
 - (void)sendBtnClick
 {
-    if ([self.textField.text isEqualToString:@""])
+    self.userName = @"测试昵称";
+    if ([self.textView.text isEqualToString:@""])
         return;
-    NSString *str = [NSString stringWithFormat:@"from=%@&text=%@&\n",self.userName,self.textField.text];
+    NSString *str = [NSString stringWithFormat:@"from=%@&text=%@&\n",self.userName,self.textView.text];
     [self.socket writeData:[str dataUsingEncoding:NSUTF8StringEncoding] withTimeout:-1 tag:0];
     
     NSLog(@"%@",str);
@@ -177,13 +183,13 @@
     
     MYMessageModel *model = [[MYMessageModel alloc] init];
     model.name = self.userName;
-    model.text = self.textField.text;
+    model.text = self.textView.text;
     model.type = 0;
     MYMessageViewModel *viewModel = [[MYMessageViewModel alloc] init];
     [viewModel setModel:model];
     [self.messageFrameArray addObject:viewModel];
     
-    self.textField.text = @"";
+    self.textView.text = @"";
     dispatch_async(dispatch_get_main_queue(), ^{
         [self.tableView beginUpdates];
         [self.tableView insertRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:self.messageFrameArray.count - 1 inSection:0]] withRowAnimation:UITableViewRowAnimationRight];
@@ -192,12 +198,36 @@
     });
 }
 
-#pragma mark - textFieldDelegate
-- (BOOL)textFieldShouldReturn:(UITextField *)textField
+#pragma mark - UITextViewDelegate
+- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
 {
-    [self sendBtnClick];
+    if ([text isEqualToString:@"\n"]) {
+        [self sendBtnClick];
+        return NO;
+    }
     return YES;
 }
+//
+//-(void)textViewDidChange:(UITextView *)textView{
+//    static CGFloat maxHeight =60.0f;
+//    CGRect frame = textView.frame;
+//    CGSize constraintSize = CGSizeMake(frame.size.width, MAXFLOAT);
+//    CGSize size = [textView sizeThatFits:constraintSize];
+//    if (size.height<=frame.size.height) {
+//        size.height=frame.size.height;
+//    }else{
+//        if (size.height >= maxHeight)
+//        {
+//            size.height = maxHeight;
+//            textView.scrollEnabled = YES;   // 允许滚动
+//        }
+//        else
+//        {
+//            textView.scrollEnabled = NO;    // 不允许滚动
+//        }
+//    }
+//    textView.frame = CGRectMake(frame.origin.x , frame.origin.y, frame.size.width, size.height);
+//}
 
 #pragma mark - socketDelegate
 - (void)socket:(GCDAsyncSocket *)sock didConnectToHost:(NSString *)host port:(uint16_t)port
