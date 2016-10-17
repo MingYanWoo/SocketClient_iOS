@@ -20,10 +20,11 @@
 {
     if (_model.type == 1) {
         CGFloat margin = 15;
+        CGFloat popMargin = 10;
         //头像
         CGFloat iconX = margin;
         CGFloat iconY = margin;
-        CGFloat iconSize = 25;
+        CGFloat iconSize = 30;
         _iconViewFrame = CGRectMake(iconX, iconY, iconSize, iconSize);
         
         //昵称
@@ -33,19 +34,26 @@
         _nameLabelFrame = (CGRect){{nameX,nameY},nameSize};
         
         //消息
-        CGFloat messageX = nameX;
-        CGFloat messageY = CGRectGetMaxY(_nameLabelFrame) + 5;
-        CGFloat messageW = [UIScreen mainScreen].bounds.size.width - iconSize - 3 * margin;
+        CGFloat messageX = nameX + popMargin;
+        CGFloat messageY = CGRectGetMaxY(_nameLabelFrame) + 5 + popMargin;
+        CGFloat messageW = [UIScreen mainScreen].bounds.size.width * 0.5;
         CGSize messageSize = [_model.text sizeWithFont:[UIFont systemFontOfSize:14] constrainedToSize:CGSizeMake(messageW, MAXFLOAT)];
         _messageLabelFrame = (CGRect){{messageX,messageY},messageSize};
         
-        _cellHeight = CGRectGetMaxY(_iconViewFrame) > CGRectGetMaxY(_messageLabelFrame) ? CGRectGetMaxY(_iconViewFrame) : CGRectGetMaxY(_messageLabelFrame);
+        //气泡
+        CGFloat popX = messageX - popMargin - 8;
+        CGFloat popY = messageY - popMargin;
+        CGSize popSize = CGSizeMake(messageSize.width + 2 * popMargin + 8, messageSize.height + 2 * popMargin);
+        _popImageFrame = (CGRect){{popX, popY}, popSize};
+        
+        _cellHeight = CGRectGetMaxY(_iconViewFrame) > CGRectGetMaxY(_popImageFrame) ? CGRectGetMaxY(_iconViewFrame) : CGRectGetMaxY(_popImageFrame);
         _cellHeight += margin;
     }else {
         CGFloat margin = 15;
+        CGFloat popMargin = 10;
         CGFloat screenW = [UIScreen mainScreen].bounds.size.width;
         //头像
-        CGFloat iconSize = 25;
+        CGFloat iconSize = 30;
         CGFloat iconX = screenW - iconSize - margin;
         CGFloat iconY = margin;
         _iconViewFrame = CGRectMake(iconX, iconY, iconSize, iconSize);
@@ -57,14 +65,20 @@
         _nameLabelFrame = (CGRect){{nameX, nameY}, nameSize};
         
         //消息
-        CGFloat messageW = screenW - iconSize - 3 * margin;
+        CGFloat messageW = screenW * 0.5;
         CGSize messageSize = [_model.text sizeWithFont:[UIFont systemFontOfSize:14] constrainedToSize:CGSizeMake(messageW, MAXFLOAT)];
-        CGFloat messageX = screenW - iconSize - messageSize.width - 2 * margin;
-        CGFloat messageY = CGRectGetMaxY(_nameLabelFrame) + 5;
+        CGFloat messageX = screenW - messageSize.width - (screenW - CGRectGetMaxX(_nameLabelFrame)) - popMargin;
+        CGFloat messageY = CGRectGetMaxY(_nameLabelFrame) + 5 + popMargin;
         _messageLabelFrame = (CGRect){{messageX,messageY},messageSize};
         
-        _cellHeight = CGRectGetMaxY(_iconViewFrame) > CGRectGetMaxY(_messageLabelFrame) ? CGRectGetMaxY(_iconViewFrame) : CGRectGetMaxY(_messageLabelFrame);
-        _cellHeight += 15;
+        //气泡
+        CGFloat popX = messageX - popMargin;
+        CGFloat popY = messageY - popMargin;
+        CGSize popSize = CGSizeMake(messageSize.width + 2 * popMargin + 8, messageSize.height + 2 * popMargin);
+        _popImageFrame = (CGRect){{popX, popY}, popSize};
+        
+        _cellHeight = CGRectGetMaxY(_iconViewFrame) > CGRectGetMaxY(_popImageFrame) ? CGRectGetMaxY(_iconViewFrame) : CGRectGetMaxY(_popImageFrame);
+        _cellHeight += margin;
     }
 }
 

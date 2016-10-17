@@ -19,6 +19,7 @@
 @property (nonatomic, assign) CGRect iconViewFrame;
 @property (nonatomic, assign) CGRect nameLabelFrame;
 @property (nonatomic, assign) CGRect messageLabelFrame;
+@property (nonatomic, assign) CGRect popImageFrame;
 
 //Cell高度
 @property (nonatomic, assign) CGFloat cellHeight;

@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "24B4CF154A3989FA178EDE60D4D8354483CB8872",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "24B4CF154A3989FA178EDE60D4D8354483CB8872" : 9223372036854775807,
+    "8435942851DE94623837375B7FA2FA2DF9E6331C" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "68B7640D-D67D-498F-9520-22FE86107D2D",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "24B4CF154A3989FA178EDE60D4D8354483CB8872" : "SocketClient_iOS\/",
+    "8435942851DE94623837375B7FA2FA2DF9E6331C" : ""
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "Socket客户端",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "Socket客户端.xcworkspace",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/MingYanWoo\/SocketClient_iOS.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "24B4CF154A3989FA178EDE60D4D8354483CB8872"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:MingYanWoo\/Git.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "8435942851DE94623837375B7FA2FA2DF9E6331C"
+    }
+  ]
+}

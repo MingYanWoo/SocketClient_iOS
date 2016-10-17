@@ -13,6 +13,7 @@
 @property (nonatomic, weak) UIImageView *iconView;
 @property (nonatomic, weak) UILabel *nameLabel;
 @property (nonatomic, weak) UILabel *messageLabel;
+@property (nonatomic, weak) UIImageView *popImageView;
 
 @end
 
@@ -50,6 +51,10 @@
     [self addSubview:nameLabel];
     _nameLabel = nameLabel;
     
+    UIImageView *imageV = [[UIImageView alloc] init];
+    [self addSubview:imageV];
+    _popImageView = imageV;
+    
     UILabel *messageLabel = [[UILabel alloc] init];
     messageLabel.numberOfLines = 0;
     [messageLabel setFont:[UIFont systemFontOfSize:14]];
@@ -62,12 +67,17 @@
     _viewModel = viewModel;
     self.iconView.frame = viewModel.iconViewFrame;
     self.nameLabel.frame = viewModel.nameLabelFrame;
+    self.popImageView.frame = viewModel.popImageFrame;
     self.messageLabel.frame = viewModel.messageLabelFrame;
     
     if (viewModel.model.type == 1) {
         self.iconView.image = [UIImage imageNamed:@"head_icon_receive"];
+        UIImage *image = [UIImage imageNamed:@"pop_left"];
+        [self.popImageView setImage:image];
     }else {
         self.iconView.image = [UIImage imageNamed:@"head_icon_send"];
+        UIImage *image = [UIImage imageNamed:@"pop_right"];
+        [self.popImageView setImage:image];
     }
     self.nameLabel.text = viewModel.model.name;
     self.messageLabel.text = viewModel.model.text;
