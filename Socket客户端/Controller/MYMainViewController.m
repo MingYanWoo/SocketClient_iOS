@@ -12,12 +12,12 @@
 #import "MYMessageViewModel.h"
 #import "MYMessageCell.h"
 #import "MYSetUsernameView.h"
+#import <UserNotifications/UserNotifications.h>
 
 #define MYBackgroudColor [UIColor colorWithRed:239.0/255.0 green:239.0/255.0 blue:239.0/255.0 alpha:1]
 
 @interface MYMainViewController () <GCDAsyncSocketDelegate,UITableViewDelegate,UITableViewDataSource,UITextViewDelegate,MYSetUsernameViewDelegate>
 
-@property (nonatomic, strong) GCDAsyncSocket *socket;
 @property (weak, nonatomic) UIView *toolBarView;
 @property (weak, nonatomic) UITextView *textView;
 @property (weak, nonatomic) UITableView *tableView;
@@ -29,6 +29,8 @@
 @property (nonatomic, weak) MYSetUsernameView *setUsernameView;
 
 @property (nonatomic, strong) NSMutableArray *messageFrameArray;
+
+@property (nonatomic, assign) int badge;
 
 @end
 
@@ -48,33 +50,32 @@
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.view.backgroundColor = MYBackgroudColor;
     
-//    UIVisualEffectView *visualEfView = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleLight]];
-//    visualEfView.frame = self.view.frame;
-//    visualEfView.alpha = 0.01;
-//    [self.view addSubview:visualEfView];
-//    _visualEfView = visualEfView;
-//    
-//    MYSetUsernameView *setUsernameView = [[MYSetUsernameView alloc] init];
-//    setUsernameView.delegate = self;
-//    [self.view addSubview:setUsernameView];
-//    _setUsernameView = setUsernameView;
+    UIVisualEffectView *visualEfView = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleLight]];
+    visualEfView.frame = self.view.frame;
+    visualEfView.alpha = 0.01;
+    [self.view addSubview:visualEfView];
+    _visualEfView = visualEfView;
+    
+    MYSetUsernameView *setUsernameView = [[MYSetUsernameView alloc] init];
+    setUsernameView.delegate = self;
+    [self.view addSubview:setUsernameView];
+    _setUsernameView = setUsernameView;
     
     [UIView animateWithDuration:0.5 animations:^{
         _visualEfView.alpha = 0.9;
     }];
     
-    GCDAsyncSocket *socket = [[GCDAsyncSocket alloc] initWithDelegate:self delegateQueue:dispatch_get_global_queue(0, 0)];
-    _socket = socket;
     
-    NSError *error = nil;
-    [socket connectToHost:@"119.29.175.89" onPort:12345 error:&error];
-    
-    if (error) {
-        NSLog(@"error:%@",error);
-    }
     //监听键盘弹出或收回通知
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyBoardChange:) name:UIKeyboardWillChangeFrameNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyBoradWillShow) name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(resetBadge) name:@"MYBadgeReset" object:nil];
+}
+
+//badge清零
+- (void)resetBadge
+{
+    self.badge = 0;
 }
 
 //实现接收到通知时的操作
@@ -304,6 +305,59 @@
         [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:self.messageFrameArray.count - 1 inSection:0] atScrollPosition:UITableViewScrollPositionBottom animated:YES];
     });
     [sock readDataWithTimeout:-1 tag:0];
+    
+    [self pushNotificationWithName:name Text:text];
+}
+
+//推送
+- (void)pushNotificationWithName:(NSString *)name Text:(NSString *)text
+{
+    // 申请通知权限
+    [[UNUserNotificationCenter currentNotificationCenter] requestAuthorizationWithOptions:(UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge) completionHandler:^(BOOL granted, NSError * _Nullable error) {
+        
+        // A Boolean value indicating whether authorization was granted. The value of this parameter is YES when authorization for the requested options was granted. The value is NO when authorization for one or more of the options is denied.
+        if (granted) {
+            
+            // 1、创建通知内容，注：这里得用可变类型的UNMutableNotificationContent，否则内容的属性是只读的
+            UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
+            // 标题
+            content.title = name;
+            // 内容
+            content.body = text;
+            
+            if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
+                self.badge++;
+            }
+            // app显示通知数量的角标
+//            content.badge  = @(self.badge);
+            [UIApplication sharedApplication].applicationIconBadgeNumber = self.badge;
+            
+            // 通知的提示声音，这里用的默认的声音
+            content.sound = [UNNotificationSound defaultSound];
+            
+            // 标识符
+            content.categoryIdentifier = @"categoryIndentifier";
+            
+            // 2、创建通知触发
+            /* 触发器分三种：
+             UNTimeIntervalNotificationTrigger : 在一定时间后触发，如果设置重复的话，timeInterval不能小于60
+             UNCalendarNotificationTrigger : 在某天某时触发，可重复
+             UNLocationNotificationTrigger : 进入或离开某个地理区域时触发
+             */
+            UNTimeIntervalNotificationTrigger *trigger = [UNTimeIntervalNotificationTrigger triggerWithTimeInterval:0.01 repeats:NO];
+            
+            // 3、创建通知请求
+            UNNotificationRequest *notificationRequest = [UNNotificationRequest requestWithIdentifier:@"MYMessageNotification" content:content trigger:trigger];
+            
+            // 4、将请求加入通知中心
+            [[UNUserNotificationCenter currentNotificationCenter] addNotificationRequest:notificationRequest withCompletionHandler:^(NSError * _Nullable error) {
+                if (error == nil) {
+                    NSLog(@"已成功加推送%@",notificationRequest.identifier);
+                }
+            }];
+        }
+        
+    }];
 }
 
 #pragma mark - TableView Delegate

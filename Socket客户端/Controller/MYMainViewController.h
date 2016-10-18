@@ -8,6 +8,9 @@
 
 #import <UIKit/UIKit.h>
 
+@class GCDAsyncSocket;
 @interface MYMainViewController : UIViewController
+
+@property (nonatomic, strong) GCDAsyncSocket *socket;
 
 @end
